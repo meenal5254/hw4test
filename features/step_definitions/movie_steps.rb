@@ -1,9 +1,5 @@
 # Completed step definitions for basic features: AddMovie, ViewDetails, EditMovie 
 
-Given /^I am on the RottenPotatoes home page$/ do
-  visit movies_path
- end
-
 Then /I should see "(.*)" before "(.*)"/ do |e1, e2|
   assert page.body =~ /#{e1}.*#{e2}/m
 end
@@ -15,7 +11,7 @@ end
   click_button 'Save Changes'
  end
 
- Then /^I should see a movie list entry with title "(.*?)" and rating "(.*?)"$/ do |title, rating| 
+ Then /^I should see a movie list entry with title "(.*?)" and rating "(.*?)"$/ do |title, rating|
    result=false
    all("tr").each do |tr|
      if tr.has_content?(title) && tr.has_content?(rating)
@@ -26,12 +22,23 @@ end
    assert result
  end
 
+ Then /^I should see a movie list entry with title "(.*?)" and director "(.*?)"$/ do |title, director|
+  result = false
+  all("tr").each do |tr|
+    if tr.has_content?(title) && tr.has_content?(director)
+      result = true
+      break
+    end
+  end
+  assert result
+end
+
  When /^I have visited the Details about "(.*?)" page$/ do |title|
    visit movies_path
    click_on "More about #{title}"
  end
 
-Then /^(?:|I )should see "([^"]*)"$/ do |text|
+Then /^I should see "([^"]*)"$/ do |text|
   if page.respond_to? :should
     page.should have_content(text)
   else
@@ -100,5 +107,57 @@ end
 
 When /i follow "Release Date"/ do
   click_link "release_date_header"
+end
+
+Given /^(?:|I )am on (.+)$/ do |page_name|
+  visit path_to(page_name)
+end
+
+When /^(?:|I )go to (.+)$/ do |page_name|
+  visit path_to(page_name)
+end
+
+Then /^(?:|I )should not see \/([^\/]*)\/$/ do |regexp|
+  regexp = Regexp.new(regexp)
+  if page.respond_to? :should
+    page.should have_no_xpath('//*', :text => regexp)
+  else
+    assert page.has_no_xpath?('//*', :text => regexp)
+  end
+end
+
+When /^I have edited the movie "(.*?)" to change the director to "(.*?)"/ do |m1, m2|
+  click_on "Edit"
+  fill_in 'Director', :with => m2
+  click_button 'Update Movie Info'
+end
+
+Then /^I should not see a movie list entry with title "(.*?)" and director "(.*?)"$/ do |title, director|
+  m = Movie.find_by_title_and_director(title,director)
+  if page.respond_to? :should
+      page.should have_no_css('table tr.m')
+  else
+      assert page.has_no_css?('table tr.m')
+  end
+end
+
+Then /^I should not see "([^"]*)"$/ do |text|
+  if page.respond_to? :should
+    page.should have_no_content(text)
+  else
+    assert page.has_no_content?(text)
+  end
+end
+
+When /^I have opted to view movies with the same director as of "([^"]*)"/ do |title|
+  click_link 'Find Movies With Same Director'
+  m = Movie.find_by_title(title)
+  if(m.director == "")
+    assert title + "has no director"
+  else
+    all("Movie").each do |tr|
+      tr.director.should == m.director
+    end
+  end
 end
 

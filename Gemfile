@@ -13,6 +13,7 @@ group :development, :test do
   gem 'capybara'
   gem 'launchy'
   gem 'rspec-rails'
+  gem 'simplecov'
 end
 group :test do
   gem 'cucumber-rails'
@@ -41,3 +42,4 @@ gem 'jquery-rails'
 
 # To use debugger
 gem 'haml'
+#add to the end of the file to add testing for assignmnt 4
